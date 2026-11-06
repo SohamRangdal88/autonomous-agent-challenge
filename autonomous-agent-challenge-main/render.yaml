@@ -1,0 +1,54 @@
+# render.yaml — Render.com Infrastructure-as-Code
+# Defines two services: FastAPI backend (Python) + Next.js frontend (Node)
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Service 1: FastAPI Backend (Python)
+  # ──────────────────────────────────────────────────────────────────────────
+  - type: web
+    name: fluidai-api
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # Injected via Render Dashboard → Environment
+      - key: GROQ_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: LLM_TEMPERATURE
+        value: "0.2"
+      - key: LLM_MAX_RETRIES
+        value: "3"
+      - key: OUTPUT_DIR
+        value: outputs
+      - key: ALLOWED_ORIGINS
+        value: "*"           # Restrict to frontend URL after first deploy
+    healthCheckPath: /health
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Service 2: Next.js Frontend (Node)
+  # ──────────────────────────────────────────────────────────────────────────
+  - type: web
+    name: fluidai-ui
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci --legacy-peer-deps && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: fluidai-api
+          type: web
+          property: host
+          # Render auto-populates this with the API service URL
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"

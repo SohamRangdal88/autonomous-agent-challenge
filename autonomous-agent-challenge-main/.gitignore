@@ -1,0 +1,40 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.so
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Env files
+.env
+
+# Generated Word documents
+outputs/*.docx
+!outputs/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Next.js
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
